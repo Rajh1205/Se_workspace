@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    main {
+      padding: 40px;
+      background: #fff;
+      max-width: 600px;
+      margin: 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #history-list {
+      text-align: left;
+      padding-left: 20px;
+    }
+
+    header nav a {
+      cursor: pointer;
+    }
+
+    h3 {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Settings</h2>
+    <nav>
+      <a onclick="goHome()">Home</a> |
+      <a href="deshbord.html">Dashboard</a> |
+      <a onclick="logout()">Logout</a>
+    </nav>
+  </header>
+  <main>
+    <h3>User Info</h3>
+    <p id="user-info">Loading...</p>
+
+    <h3>Upload History</h3>
+    <ul id="history-list"></ul>
+  </main>
+
+  <script>
+    const username = localStorage.getItem("loggedInUser");
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const user = users.find(u => u.username === username);
+
+    function goHome() {
+      window.location.href = "home.html";
+    }
+
+    function logout() {
+      if (confirm("Do you want to logout?")) {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "index.html";
+      }
+    }
+
+    if (!user) {
+      alert("You must be logged in to view settings.");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("user-info").innerText =
+        `Username: ${user.username}\nEmail: ${user.email}`;
+
+      const historyList = document.getElementById("history-list");
+      if (!user.history || user.history.length === 0) {
+        historyList.innerHTML = "<li>No upload history available.</li>";
+      } else {
+        user.history.forEach(entry => {
+          const li = document.createElement("li");
+          li.textContent = `${entry.fileName} — ${entry.date}`;
+          historyList.appendChild(li);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

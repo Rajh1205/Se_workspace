@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel Analytics Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-3d@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h2>EXCEL ANALYTICS</h2>
+<nav>
+  <a href="#" onclick="goHome()">Home</a> |
+  <a href="#">Dashboard</a> |
+  <a href="#" onclick="goSettings()">Settings</a> |
+  <a href="#" onclick="logout()">Logout</a>
+</nav>
+
+  </header>
+  <main>
+    <h3>Analyze your Excel File</h3>
+    <div class="upload-section">
+      <div id="drop-area">
+        <p><strong>Drop Excel file here or</strong></p>
+        <input type="file" id="upload" hidden />
+        <button id="browseBtn">Browse Files</button>
+      </div>
+      <div class="stats">
+        <div class="stat-box"><strong id="sales">0</strong><br>Total Sales</div>
+        <div class="stat-box"><strong id="revenue">$0</strong><br>Total Revenue</div>
+        <div class="stat-box"><strong id="products">0</strong><br>Products</div>
+        <div class="stat-box"><strong id="customers">0</strong><br>Customers</div>
+      </div>
+    </div>
+    <div class="chart-controls">
+      <label for="chartType">Choose Chart Type:</label>
+      <select id="chartType">
+        <option value="line">Line Chart</option>
+        <option value="bar">Bar Chart</option>
+        <option value="3d">3D Chart</option>
+        <option value="pie">Pie Chart</option>
+        <option value="doughnut">Doughnut Chart</option>
+      </select>
+      <button onclick="generateChart()">Generate Chart</button>
+      <button onclick="downloadChart()">Download Chart</button>
+    </div>
+    <canvas id="chartCanvas" width="800" height="400"></canvas>
+  </main>
+
+  <script>
+    let parsedData = [];
+    let chart;
+    let graphLabels = [];
+    let graphValues = [];
+
+    const dropArea = document.getElementById('drop-area');
+    const browseBtn = document.getElementById('browseBtn');
+    const fileInput = document.getElementById('upload');
+
+    browseBtn.addEventListener('click', () => fileInput.click());
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = '#e3f2fd';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.backgroundColor = '#ffffff';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = '#ffffff';
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        parsedData = XLSX.utils.sheet_to_json(sheet);
+
+        let totalRevenue = 0;
+        let productMap = new Map();
+
+        parsedData.forEach(row => {
+          let keysLower = Object.keys(row).map(k => k.toLowerCase());
+
+          // Find numeric column
+          let amountKey = keysLower.find(k => k.includes("amount") || k.includes("revenue") || k.includes("total") || k.includes("sales"));
+          let amount = amountKey ? parseFloat(row[Object.keys(row)[keysLower.indexOf(amountKey)]]) || 0 : 0;
+          totalRevenue += amount;
+
+          // Find product/category column
+          let productKey = keysLower.find(k => k.includes("product") || k.includes("item") || k.includes("category") || k.includes("name"));
+          let productName = productKey ? row[Object.keys(row)[keysLower.indexOf(productKey)]] : "Unknown";
+
+          if (!productMap.has(productName)) productMap.set(productName, 0);
+          productMap.set(productName, productMap.get(productName) + amount);
+        });
+
+        document.getElementById('sales').innerText = parsedData.length;
+        document.getElementById('revenue').innerText = '$' + totalRevenue.toFixed(2);
+        document.getElementById('products').innerText = productMap.size;
+        document.getElementById('customers').innerText = new Set(parsedData.map(r => r.Customer)).size;
+
+        graphLabels = Array.from(productMap.keys());
+        graphValues = Array.from(productMap.values());
+
+        generateChart(); // Auto show chart
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function generateChart() {
+      const ctx = document.getElementById('chartCanvas').getContext('2d');
+      if (chart) chart.destroy();
+
+      const type = document.getElementById('chartType').value;
+      if (type === '3d') {
+        chart = new Chart(ctx, {
+          type: 'bar3d',
+          data: { labels: graphLabels, datasets: [{ label: 'Revenue by Product', data: graphValues, backgroundColor: '#4bc0c0' }] },
+          options: { responsive: true, scales: { z: { display: true } } }
+        });
+      } else {
+        chart = new Chart(ctx, {
+          type: type,
+          data: { labels: graphLabels, datasets: [{ label: 'Revenue by Product', data: graphValues, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: '#36a2eb', borderWidth: 1 }] },
+          options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+      }
+    }
+
+    function downloadChart() {
+      const canvas = document.getElementById('chartCanvas');
+      const pdf = new jspdf.jsPDF();
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 10, 10, 180, 100);
+      pdf.save('chart.pdf');
+    }
+  function goHome() {
+    window.location.href = "home.html";
+  }
+
+  function goSettings() {
+    window.location.href = "settings.html";
+  }
+
+  function logout() {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (confirmLogout) {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "index.html";
+    }
+  }
+
+  // Save history of uploaded files
+  function saveUploadHistory(fileName) {
+    const user = localStorage.getItem("loggedInUser");
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    const index = users.findIndex(u => u.username === user);
+    if (index !== -1) {
+      users[index].history.push({ fileName, date: new Date().toLocaleString() });
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+  }
+
+  // Hook into handleFile to record file
+  const originalHandleFile = handleFile;
+  handleFile = function(file) {
+    saveUploadHistory(file.name);
+    originalHandleFile(file);
+  };
+
+  // Check if logged in
+  if (!localStorage.getItem("loggedInUser")) {
+    alert("You must log in first.");
+    window.location.href = "index.html";
+  }
+</script>
+
+</body>
+</html>
