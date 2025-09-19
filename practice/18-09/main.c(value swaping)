@@ -1,0 +1,20 @@
+#include<stdio.h>
+#include<conio.h>
+
+int main()
+{
+    int a=4;
+    int b=2;
+    
+    printf("\nBefore swaping value of a is %d",a);
+    printf("\nBefore swaping value of b is %d",b);
+    
+    a=a+b;
+    b=a-b;
+    a=a-b;
+    
+    printf("\nAfter swaping value of a is %d",a);
+    printf("\nAfter swaping value of b is %d",b);
+    
+    return 0;
+}
