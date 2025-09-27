@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include<stdio.h>
 
 int main()
 {
@@ -64,3 +64,4 @@ int main()
     printf("\nThank you for using the program!\n");
     return 0;
 }
+
