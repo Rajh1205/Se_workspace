@@ -7,7 +7,8 @@ int main()
     int luckynum;
     int maxtries = 5;
     int tries = 0;
-    
+
+    srand(time(0));
     luckynum = (rand() % 100);
     
     printf("Lucky Number (for testing): %d\n",luckynum);
