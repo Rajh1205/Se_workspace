@@ -1,0 +1,40 @@
+1. rand() — Generates a random number
+
+rand() is a C library function that returns a pseudo-random integer between 0 and RAND_MAX (usually 32767).
+
+But if you call rand() directly, you’ll get the same sequence of numbers every time the program runs.
+
+
+2. srand(time(0)) — Sets the seed for randomness
+
+srand() means “seed random” — it initializes the random number generator.
+
+time(0) gives the current system time in seconds since 1970 (Unix time).
+
+So every time you run the program, time(0) is different → the random sequence changes.
+
+This ensures a different lucky number every time you run your program.
+
+
+3. (rand() % 100) — Limits range from 0 to 99
+
+% is the modulus operator → it gives the remainder after division.
+
+So rand() % 100 will always give a number between 0 and 99.
+
+That’s your lucky number range.
+
+
+🔸 Example:
+
+If internally rand() returns:
+
+rand() → 12345
+
+
+then:
+
+12345 % 100 = 45
+
+
+So your lucky number becomes 45. 
