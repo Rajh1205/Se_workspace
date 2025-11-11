@@ -1,8 +1,9 @@
-#include <iostream>
-#include <string>
+#include<iostream>
+#include<string>
 using namespace std;
 
-class Lecture {
+class Lecture
+{
 private:
     string lecturerName;
     string subjectName;
@@ -12,7 +13,8 @@ private:
 public:
     Lecture() { }
 
-    void assignLectureDetails() {
+    void assignLectureDetails()
+   {
         cout << "Enter Lecturer Name: ";
         cin >> lecturerName;
         cout << "Enter Subject Name: ";
@@ -23,19 +25,22 @@ public:
         cin >> numberOfLectures;
     }
 
-    void displayLectureDetails() {
+    void displayLectureDetails() 
+   {
         cout << "\nLecturer Name: " << lecturerName;
         cout << "\nSubject Name: " << subjectName;
         cout << "\nCourse Name: " << courseName;
         cout << "\nNumber of Lectures: " << numberOfLectures << "\n";
     }
 
-    string getSubjectName() {
+    string getSubjectName() 
+    {
         return subjectName;
     }
 };
 
-int main() {
+int main() 
+{
     int n;
 
     cout << "Enter the number of lecturers: ";
@@ -43,12 +48,14 @@ int main() {
 
     Lecture lecturers[n]; // C++ supports variable-length array in most compilers
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         cout << "\nEnter Details for Lecturer " << i + 1 << ":\n";
         lecturers[i].assignLectureDetails();
     }
 
-    while (true) {
+    while (true)
+    {
         string searchSubject;
         int found = 0;
         int choice;
@@ -62,7 +69,8 @@ int main() {
         cout << "Enter Subject Name: ";
         cin >> searchSubject;
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+            {
             if (lecturers[i].getSubjectName() == searchSubject) {
                 lecturers[i].displayLectureDetails();
                 found = 1;
@@ -75,3 +83,4 @@ int main() {
 
     return 0;
 }
+
